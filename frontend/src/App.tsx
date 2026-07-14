@@ -6,7 +6,7 @@ import { Logo } from './components/Logo'
 import { RulesModal } from './components/RulesModal'
 import type { GameState, Session } from './types'
 
-const SESSION_KEY = 'kosar-session'
+const SESSION_KEY = 'thousand-session'
 
 function getSavedSession(): Session | null {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null') } catch { return null }
@@ -154,7 +154,7 @@ function Home({ onEnter, openRules, externalError }: { onEnter: (s: Session) => 
         <div className="hero-dice hero-dice--five"><Die value={5}/></div>
         <div className="hero-dice hero-dice--six"><Die value={6}/></div>
       </section>
-      <footer className="home-footer"><span>ПЯТЬ КОСТЕЙ. ОДИН КОСАРЬ.</span><span>СДЕЛАНО ДЛЯ ДРУЗЕЙ ↗</span></footer>
+      <footer className="home-footer"><span>ПЯТЬ КОСТЕЙ. ОДНА ТЫСЯЧА.</span><span>СДЕЛАНО ДЛЯ ДРУЗЕЙ ↗</span></footer>
     </div>
   )
 }

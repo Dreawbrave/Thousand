@@ -47,13 +47,13 @@ def test_upstash_adapter_saves_with_ttl_and_loads(monkeypatch) -> None:
         expiration = None
 
         async def set(self, key, value, ex=None):
-            assert key == "kosar:room:CLOUD"
+            assert key == "thousand:room:CLOUD"
             self.value = value
             self.expiration = ex
             return True
 
         async def get(self, key):
-            assert key == "kosar:room:CLOUD"
+            assert key == "thousand:room:CLOUD"
             return self.value
 
     fake = FakeRedis()

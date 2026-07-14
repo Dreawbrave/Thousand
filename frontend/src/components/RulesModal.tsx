@@ -6,7 +6,7 @@ export function RulesModal({ close }: { close: () => void }) {
       <section className="rules" onMouseDown={(event) => event.stopPropagation()}>
         <button className="icon-button rules__close" onClick={close} aria-label="Закрыть"><X /></button>
         <p className="eyebrow">ШПАРГАЛКА</p>
-        <h2>Как добраться до косаря</h2>
+        <h2>Как добраться до тысячи</h2>
         <div className="rules__grid">
           <article><b>1 = 10</b><span>Одиночная единица</span></article>
           <article><b>5 = 5</b><span>Одиночная пятёрка</span></article>

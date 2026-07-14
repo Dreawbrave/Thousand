@@ -11,7 +11,7 @@ from upstash_redis.asyncio import Redis
 from .game import Room
 
 
-logger = logging.getLogger("kosar.storage")
+logger = logging.getLogger("thousand.storage")
 load_dotenv()
 ROOM_TTL_SECONDS = int(os.getenv("ROOM_TTL_SECONDS", "604800"))
 REDIS_URL = os.getenv("UPSTASH_REDIS_REST_URL", "").strip()
@@ -33,7 +33,7 @@ def storage_mode() -> str:
 
 
 def room_key(code: str) -> str:
-    return f"kosar:room:{code.upper()}"
+    return f"thousand:room:{code.upper()}"
 
 
 async def save_room(room: Room) -> bool:

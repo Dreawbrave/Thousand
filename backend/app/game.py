@@ -201,7 +201,7 @@ class Room:
         if player.score >= 1000:
             self.status = "finished"
             self.winner_id = player.id
-            self.event = f"{player.name} набрал {player.score} и забирает косарь!"
+            self.event = f"{player.name} набрал {player.score} и побеждает!"
             self.must_roll = False
             return
 

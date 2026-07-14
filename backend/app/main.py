@@ -14,7 +14,7 @@ from .game import Player, Room, player_id, room_code
 from .storage import load_room, save_room, storage_mode
 
 
-app = FastAPI(title="Косарь API", version="1.0.0")
+app = FastAPI(title="Тысяча API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
