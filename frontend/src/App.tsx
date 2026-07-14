@@ -194,9 +194,17 @@ function Header({ connected, leave, openRules, code }: { connected: boolean; lea
 function Game({ state, me, connected, send, leave, rolling, openRules, error }: GameProps & { rolling: boolean }) {
   const isMine = state.currentPlayerId === me
   const current = state.players.find((p) => p.id === state.currentPlayerId)
+  const mePlayer = state.players.find((p) => p.id === me)
   const winner = state.players.find((p) => p.id === state.winnerId)
   const dice = state.lastRoll?.dice ?? Array.from({ length: state.diceToRoll }, () => 1)
-  const requirementText = !state.players.find(p => p.id === me)?.opened ? 'Для входа нужно 50' : state.bankRequirement > 0 ? `До выхода из ямы: ${state.bankRequirement}` : ''
+  const pointsLeft = Math.max(0, state.bankRequirement - state.turnScore)
+  const requirementText = !mePlayer?.opened
+    ? `Для входа нужно ещё ${pointsLeft}`
+    : mePlayer.score < 50 && state.bankRequirement > 0
+      ? `Нижняя яма: до 50 ещё ${pointsLeft}`
+      : state.bankRequirement > 0
+        ? `До выхода из ямы ещё ${pointsLeft}`
+        : ''
 
   return (
     <div className="game page">
@@ -207,7 +215,7 @@ function Game({ state, me, connected, send, leave, rolling, openRules, error }: 
           <div className="player-list">
             {[...state.players].sort((a,b) => b.score - a.score).map((player, index) => (
               <div className={`player-row ${player.id === state.currentPlayerId ? 'player-row--active' : ''}`} key={player.id}>
-                <span className="rank">{String(index + 1).padStart(2, '0')}</span><Avatar name={player.name} index={state.players.indexOf(player)}/><div className="player-row__name"><b>{player.name}{player.id === me && ' · ВЫ'}</b><span>{player.opened ? (player.score >= 200 && player.score < 300) || (player.score >= 600 && player.score < 700) ? 'В ЯМЕ' : 'В ИГРЕ' : 'НЕ ОТКРЫЛСЯ'}</span></div><strong>{player.score}</strong><div className="bolts">{Array.from({length:3},(_,i)=><i className={i < player.bolts ? 'filled' : ''} key={i}/>)}</div>
+                <span className="rank">{String(index + 1).padStart(2, '0')}</span><Avatar name={player.name} index={state.players.indexOf(player)}/><div className="player-row__name"><b>{player.name}{player.id === me && ' · ВЫ'}</b><span>{playerStatus(player)}</span></div><strong>{player.score}</strong><div className="bolts">{Array.from({length:3},(_,i)=><i className={i < player.bolts ? 'filled' : ''} key={i}/>)}</div>
               </div>
             ))}
           </div>
@@ -242,6 +250,14 @@ function Game({ state, me, connected, send, leave, rolling, openRules, error }: 
       </div>
     </div>
   )
+}
+
+function playerStatus(player: GameState['players'][number]) {
+  if (!player.opened) return 'НЕ ОТКРЫЛСЯ'
+  if (player.score < 0) return 'В МИНУСЕ'
+  if (player.score < 50) return 'НИЖНЯЯ ЯМА'
+  if ((player.score >= 200 && player.score < 300) || (player.score >= 600 && player.score < 700)) return 'В ЯМЕ'
+  return 'В ИГРЕ'
 }
 
 function Avatar({ name, index }: { name: string; index: number }) {

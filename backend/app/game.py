@@ -256,6 +256,11 @@ class Room:
     def bank_requirement(self, player: Player) -> int:
         if not player.opened:
             return 50
+        projected_score = player.score + self.turn_score
+        if player.score < 50 and 0 < projected_score < 50:
+            return 50 - player.score
+        if 0 <= player.score < 50:
+            return 50 - player.score
         for bottom, top in PITS:
             if bottom <= player.score < top:
                 return top - player.score
