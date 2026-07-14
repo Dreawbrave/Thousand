@@ -210,7 +210,7 @@ function Game({ state, me, connected, send, leave, rolling, openRules, error }: 
               </div>
             ))}
           </div>
-          <div className="legend"><span><i className="bolt-dot"/> 3 БОЛТА = −50</span><span>555 = САМОСВАЛ</span></div>
+          <div className="legend"><span><i className="bolt-dot"/> 3 БОЛТА ПОДРЯД = −50</span><span>555 = САМОСВАЛ</span></div>
         </aside>
         <section className="table-area">
           <div className="turn-heading">

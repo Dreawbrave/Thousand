@@ -64,6 +64,32 @@ def test_third_bolt_costs_fifty() -> None:
     assert room.players[0].bolts == 0
 
 
+def test_banking_points_breaks_bolt_streak() -> None:
+    room = playing_room((100, 0))
+    room.players[0].opened = True
+    room.players[0].bolts = 2
+    room.turn_score = 5
+
+    room.bank("one")
+
+    assert room.players[0].score == 105
+    assert room.players[0].bolts == 0
+
+
+def test_scoring_roll_without_bank_does_not_break_bolt_streak() -> None:
+    room = playing_room((100, 0))
+    room.players[0].opened = True
+    room.players[0].bolts = 2
+
+    room.roll("one", [5, 2, 2, 4, 6])
+    assert room.players[0].bolts == 2
+
+    room.roll("one", [2, 2, 3, 4])
+
+    assert room.players[0].score == 50
+    assert room.players[0].bolts == 0
+
+
 def test_dump_truck_resets_exactly_555() -> None:
     room = playing_room((500, 0))
     room.players[0].opened = True

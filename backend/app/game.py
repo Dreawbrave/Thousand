@@ -193,6 +193,7 @@ class Room:
         gained = self.turn_score
         player.score += gained
         player.opened = True
+        player.bolts = 0
         if player.score == 555:
             player.score = 0
             self.event = f"{player.name} попал на самосвал! 555 превращаются в ноль."
