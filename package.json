@@ -1,0 +1,12 @@
+{
+  "name": "dice-1000",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n WEB,API -c cyan,magenta \"npm --prefix frontend run dev\" \"python -m uvicorn backend.app.main:app --reload --port 8000\"",
+    "build": "npm --prefix frontend run build",
+    "test": "python -m pytest backend/tests"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
