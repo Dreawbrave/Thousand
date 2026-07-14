@@ -70,21 +70,18 @@ def test_negative_score_can_be_repaid_in_small_banks() -> None:
     assert room.players[0].score == -30
 
 
-def test_crossing_from_negative_must_reach_fifty() -> None:
+def test_crossing_from_negative_can_be_banked_at_any_positive_score() -> None:
     room = playing_room((-50, 0))
     room.players[0].opened = True
     room.turn_score = 75
 
-    assert room.bank_requirement(room.players[0]) == 100
-    assert room.can_bank() is False
-
-    room.turn_score = 100
+    assert room.bank_requirement(room.players[0]) == 0
     assert room.can_bank() is True
     room.bank("one")
-    assert room.players[0].score == 50
+    assert room.players[0].score == 25
 
 
-def test_lower_pit_remains_until_total_score_reaches_fifty() -> None:
+def test_lower_pit_starts_on_the_turn_after_leaving_negative_score() -> None:
     room = playing_room((25, 0))
     room.players[0].opened = True
     room.turn_score = 20
@@ -94,6 +91,16 @@ def test_lower_pit_remains_until_total_score_reaches_fifty() -> None:
 
     room.turn_score = 25
     assert room.can_bank() is True
+
+
+def test_leaving_negative_above_fifty_skips_lower_pit() -> None:
+    room = playing_room((-50, 0))
+    room.players[0].opened = True
+    room.turn_score = 105
+
+    assert room.can_bank() is True
+    room.bank("one")
+    assert room.players[0].score == 55
 
 
 def test_third_bolt_costs_fifty() -> None:
