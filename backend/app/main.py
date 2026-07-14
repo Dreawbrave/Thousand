@@ -111,6 +111,7 @@ async def game_socket(websocket: WebSocket, code: str, player_id_value: str) -> 
                 continue
             try:
                 async with locks[code]:
+                    should_save = True
                     if action == "start":
                         room.start(player_id_value)
                     elif action == "roll":
@@ -119,9 +120,13 @@ async def game_socket(websocket: WebSocket, code: str, player_id_value: str) -> 
                         room.bank(player_id_value)
                     elif action == "restart":
                         room.restart(player_id_value)
+                    elif action == "reaction":
+                        room.send_reaction(player_id_value, message.get("stickerId", ""))
+                        should_save = False
                     else:
                         raise ValueError("Неизвестное действие")
-                    await save_room(room)
+                    if should_save:
+                        await save_room(room)
                 await broadcast(code)
             except ValueError as error:
                 await websocket.send_json({"type": "error", "message": str(error)})

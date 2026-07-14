@@ -5,10 +5,13 @@ from dataclasses import dataclass, field
 import random
 import secrets
 import string
+import time
 from typing import Any
 
 
 PITS = ((200, 300), (600, 700))
+REACTION_IDS = frozenset({"laugh", "cry", "angry", "confused", "shocked", "smug", "love", "cool"})
+REACTION_COOLDOWN_SECONDS = 1.2
 
 
 @dataclass
@@ -111,6 +114,8 @@ class Room:
     round: int = 1
     event: str = "Ждём остальных игроков"
     max_players: int = 0
+    reaction: dict[str, Any] | None = None
+    reaction_cooldowns: dict[str, float] = field(default_factory=dict, repr=False, compare=False)
 
     @property
     def current_player(self) -> Player | None:
@@ -120,6 +125,26 @@ class Room:
 
     def find_player(self, player_id: str) -> Player | None:
         return next((player for player in self.players if player.id == player_id), None)
+
+    def send_reaction(self, actor_id: str, sticker_id: str) -> None:
+        player = self.find_player(actor_id)
+        if player is None:
+            raise ValueError("Игрок не найден")
+        if self.status not in {"playing", "finished"}:
+            raise ValueError("Реакции доступны после начала игры")
+        if sticker_id not in REACTION_IDS:
+            raise ValueError("Неизвестная реакция")
+        now = time.monotonic()
+        last_sent = self.reaction_cooldowns.get(actor_id, 0.0)
+        if now - last_sent < REACTION_COOLDOWN_SECONDS:
+            raise ValueError("Не так быстро — дай реакции долететь")
+        self.reaction_cooldowns[actor_id] = now
+        self.reaction = {
+            "id": sticker_id,
+            "playerId": actor_id,
+            "nonce": secrets.token_hex(6),
+            "createdAt": int(time.time() * 1000),
+        }
 
     def start(self, actor_id: str) -> None:
         if actor_id != self.host_id:
@@ -258,6 +283,7 @@ class Room:
             "canBank": self.can_bank(),
             "bankRequirement": self.bank_requirement(current) if current else 0,
             "maxPlayers": self.max_players,
+            "reaction": self.reaction,
         }
 
     def stored(self) -> dict[str, Any]:

@@ -16,6 +16,13 @@ export type LastRoll = {
   busted: boolean
 }
 
+export type Reaction = {
+  id: string
+  playerId: string
+  nonce: string
+  createdAt: number
+}
+
 export type GameState = {
   code: string
   status: 'lobby' | 'playing' | 'finished'
@@ -32,6 +39,7 @@ export type GameState = {
   canBank: boolean
   bankRequirement: number
   maxPlayers: number
+  reaction: Reaction | null
 }
 
 export type Session = { playerId: string; code: string; name: string }

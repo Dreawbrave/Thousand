@@ -1,3 +1,5 @@
+import pytest
+
 from backend.app.game import Player, Room, score_roll
 
 
@@ -97,3 +99,27 @@ def test_dump_truck_resets_exactly_555() -> None:
     room.bank("one")
     assert room.players[0].score == 0
     assert room.players[0].opened is True
+
+
+def test_reaction_is_available_to_any_player_without_changing_game_state() -> None:
+    room = playing_room((100, 200))
+    original_turn = room.current_player.id
+
+    room.send_reaction("two", "laugh")
+
+    assert room.reaction is not None
+    assert room.reaction["id"] == "laugh"
+    assert room.reaction["playerId"] == "two"
+    assert room.current_player.id == original_turn
+    assert "reaction" not in room.stored()
+
+
+def test_reactions_are_validated_and_rate_limited() -> None:
+    room = playing_room()
+
+    with pytest.raises(ValueError, match="Неизвестная реакция"):
+        room.send_reaction("one", "custom-url")
+
+    room.send_reaction("one", "cry")
+    with pytest.raises(ValueError, match="Не так быстро"):
+        room.send_reaction("one", "love")

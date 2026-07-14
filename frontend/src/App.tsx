@@ -4,6 +4,7 @@ import { createRoom, joinRoom, socketUrl, type ServerMessage } from './api'
 import { Die } from './components/Dice'
 import { Logo } from './components/Logo'
 import { RulesModal } from './components/RulesModal'
+import { Reactions } from './components/Reactions'
 import type { GameState, Session } from './types'
 
 const SESSION_KEY = 'thousand-session'
@@ -85,10 +86,10 @@ function App() {
     setConnected(false)
   }
 
-  const send = (action: string) => {
+  const send = (action: string, payload: Record<string, unknown> = {}) => {
     if (socket.current?.readyState !== WebSocket.OPEN) return setError('Связь восстанавливается…')
     if (action === 'roll') setRolling(true)
-    socket.current.send(JSON.stringify({ action }))
+    socket.current.send(JSON.stringify({ action, ...payload }))
   }
 
   return (
@@ -184,7 +185,7 @@ function Lobby({ state, me, connected, send, leave, openRules, error }: GameProp
   )
 }
 
-type GameProps = { state: GameState; me: string; connected: boolean; send: (a: string) => void; leave: () => void; openRules: () => void; error: string }
+type GameProps = { state: GameState; me: string; connected: boolean; send: (action: string, payload?: Record<string, unknown>) => void; leave: () => void; openRules: () => void; error: string }
 
 function Header({ connected, leave, openRules, code }: { connected: boolean; leave: () => void; openRules: () => void; code?: string }) {
   return <header className="game-header"><Logo compact/><div className="game-header__right">{code && <span className="header-code">СТОЛ {code}</span>}<span className={`connection ${connected ? '' : 'connection--off'}`}>{connected ? <Wifi/> : <WifiOff/>}<i>{connected ? 'В СЕТИ' : 'НЕТ СВЯЗИ'}</i></span><button className="icon-button" onClick={openRules} aria-label="Правила"><BookOpen/></button><button className="icon-button" onClick={leave} aria-label="Выйти"><ArrowLeft/></button></div></header>
@@ -233,6 +234,7 @@ function Game({ state, me, connected, send, leave, rolling, openRules, error }: 
               <button className="roll-button" onClick={() => send('roll')} disabled={rolling}><Dices/>{rolling ? 'ЛЕТЯТ…' : `БРОСИТЬ ${state.diceToRoll === 5 ? 'КОСТИ' : state.diceToRoll}`}</button>
               <button className="bank-button" onClick={() => send('bank')} disabled={!state.canBank || rolling}><span>ХВАТИТ</span><b>Забрать {state.turnScore}</b></button>
             </> : <div className="waiting"><span className="mini-loader"/> Ждём броска</div>}
+            <Reactions reaction={state.reaction} players={state.players} send={send} disabled={!connected} />
           </div>
           {isMine && requirementText && <p className="requirement">⚑ {requirementText}</p>}
           {error && <p className="form-error game-error">{error}</p>}
