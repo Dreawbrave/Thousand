@@ -1,0 +1,10 @@
+[
+  { "id": "laugh", "label": "Смеюсь", "src": "/stickers/laugh.png" },
+  { "id": "cry", "label": "Плачу", "src": "/stickers/cry.png" },
+  { "id": "angry", "label": "Злюсь", "src": "/stickers/angry.png" },
+  { "id": "confused", "label": "Не понял", "src": "/stickers/confused.png" },
+  { "id": "shocked", "label": "В шоке", "src": "/stickers/shocked.png" },
+  { "id": "smug", "label": "Ну конечно", "src": "/stickers/smug.png" },
+  { "id": "love", "label": "Любовь", "src": "/stickers/love.png" },
+  { "id": "cool", "label": "Красиво", "src": "/stickers/cool.png" }
+]
