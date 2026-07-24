@@ -6,6 +6,8 @@ import { Logo } from './components/Logo'
 import { RulesModal } from './components/RulesModal'
 import { Reactions } from './components/Reactions'
 import { Chat } from './components/Chat'
+import { Voice, type VoiceEventHandler } from './components/Voice'
+import type { VoiceServerMessage } from './api'
 import type { GameState, Session } from './types'
 
 const SESSION_KEY = 'thousand-session'
@@ -21,7 +23,9 @@ function App() {
   const [error, setError] = useState('')
   const [rules, setRules] = useState(false)
   const [rolling, setRolling] = useState(false)
+  const [communicationPanel, setCommunicationPanel] = useState<'chat' | 'voice' | null>(null)
   const socket = useRef<WebSocket | null>(null)
+  const voiceHandler = useRef<VoiceEventHandler | null>(null)
 
   useEffect(() => {
     if (!session) return
@@ -49,6 +53,7 @@ function App() {
           setRolling(false)
         }
         if (message.type === 'error') { setError(message.message); setRolling(false) }
+        if (message.type.startsWith('voice-')) voiceHandler.current?.(message as VoiceServerMessage)
       }
       ws.onclose = (event) => {
         if (heartbeat) clearInterval(heartbeat)
@@ -85,6 +90,7 @@ function App() {
     setSession(null)
     setState(null)
     setConnected(false)
+    setCommunicationPanel(null)
   }
 
   const send = (action: string, payload: Record<string, unknown> = {}) => {
@@ -106,7 +112,10 @@ function App() {
       ) : (
         <Game state={state} me={session.playerId} connected={connected} send={send} leave={leave} rolling={rolling} openRules={() => setRules(true)} error={error} />
       )}
-      {session && state && <Chat messages={state.chatMessages} players={state.players} me={session.playerId} send={send} disabled={!connected} />}
+      {session && state && <>
+        <Chat messages={state.chatMessages} players={state.players} me={session.playerId} send={send} disabled={!connected} open={communicationPanel === 'chat'} onOpenChange={(open) => setCommunicationPanel(open ? 'chat' : null)} />
+        <Voice players={state.players} me={session.playerId} send={send} disabled={!connected} open={communicationPanel === 'voice'} onOpenChange={(open) => setCommunicationPanel(open ? 'voice' : null)} messageHandler={voiceHandler} />
+      </>}
     </main>
   )
 }

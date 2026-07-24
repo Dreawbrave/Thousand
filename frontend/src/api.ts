@@ -33,3 +33,15 @@ export type ServerMessage =
   | { type: 'state'; state: GameState }
   | { type: 'error'; message: string }
   | { type: 'pong' }
+  | VoiceServerMessage
+
+export type VoiceSignal = {
+  description?: RTCSessionDescriptionInit
+  candidate?: RTCIceCandidateInit
+}
+
+export type VoiceServerMessage =
+  | { type: 'voice-members'; playerIds: string[] }
+  | { type: 'voice-peer-joined'; playerId: string }
+  | { type: 'voice-peer-left'; playerId: string }
+  | { type: 'voice-signal'; fromPlayerId: string; signal: VoiceSignal }

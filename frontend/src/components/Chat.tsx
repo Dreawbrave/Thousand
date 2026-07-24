@@ -4,14 +4,15 @@ import type { ChatMessage, Player } from '../types'
 
 type SendAction = (action: string, payload?: Record<string, unknown>) => void
 
-export function Chat({ messages, players, me, send, disabled }: {
+export function Chat({ messages, players, me, send, disabled, open, onOpenChange }: {
   messages: ChatMessage[]
   players: Player[]
   me: string
   send: SendAction
   disabled: boolean
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }) {
-  const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState('')
   const [unread, setUnread] = useState(0)
   const lastMessageId = useRef(messages.at(-1)?.id)
@@ -46,7 +47,7 @@ export function Chat({ messages, players, me, send, disabled }: {
         <section className="chat-panel" aria-label="Чат игроков">
           <header className="chat-panel__head">
             <div><b>ЧАТ СТОЛА</b><span>{players.filter((player) => player.connected).length} в сети</span></div>
-            <button onClick={() => setOpen(false)} aria-label="Закрыть чат"><X /></button>
+            <button onClick={() => onOpenChange(false)} aria-label="Закрыть чат"><X /></button>
           </header>
           <div className="chat-messages" ref={list} aria-live="polite">
             {messages.length === 0 && (
@@ -79,7 +80,7 @@ export function Chat({ messages, players, me, send, disabled }: {
           </form>
         </section>
       )}
-      <button className="chat-toggle" onClick={() => setOpen((value) => !value)} disabled={disabled} aria-expanded={open} aria-label={open ? 'Закрыть чат' : 'Открыть чат'}>
+      <button className="chat-toggle" onClick={() => onOpenChange(!open)} disabled={disabled} aria-expanded={open} aria-label={open ? 'Закрыть чат' : 'Открыть чат'}>
         {open ? <X /> : <MessageCircle />}
         {!open && unread > 0 && <i>{unread}</i>}
       </button>

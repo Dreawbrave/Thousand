@@ -39,6 +39,7 @@ class PlayerInput(BaseModel):
 rooms: dict[str, Room] = {}
 locks: dict[str, asyncio.Lock] = {}
 connections: dict[str, dict[str, set[WebSocket]]] = {}
+voice_members: dict[str, set[str]] = {}
 
 
 @app.get("/api/health")
@@ -56,6 +57,7 @@ async def resolve_room(code: str) -> Room | None:
         rooms[code] = room
         locks.setdefault(code, asyncio.Lock())
         connections.setdefault(code, {})
+        voice_members.setdefault(code, set())
     return room
 
 
@@ -66,6 +68,7 @@ async def create_room(payload: PlayerInput) -> dict[str, str]:
     rooms[code] = Room(code=code, host_id=owner.id, players=[owner])
     locks[code] = asyncio.Lock()
     connections[code] = {}
+    voice_members[code] = set()
     await save_room(rooms[code])
     return {"code": code, "playerId": owner.id}
 
@@ -109,6 +112,40 @@ async def game_socket(websocket: WebSocket, code: str, player_id_value: str) -> 
             if action == "ping":
                 await websocket.send_json({"type": "pong"})
                 continue
+            if action == "voice_join":
+                current_members = list(voice_members.setdefault(code, set()) - {player_id_value})
+                voice_members[code].add(player_id_value)
+                await websocket.send_json({"type": "voice-members", "playerIds": current_members})
+                await send_voice_event(
+                    code,
+                    {"type": "voice-peer-joined", "playerId": player_id_value},
+                    exclude_player=player_id_value,
+                )
+                continue
+            if action == "voice_leave":
+                if player_id_value in voice_members.setdefault(code, set()):
+                    voice_members[code].discard(player_id_value)
+                    await send_voice_event(
+                        code,
+                        {"type": "voice-peer-left", "playerId": player_id_value},
+                        exclude_player=player_id_value,
+                    )
+                continue
+            if action == "voice_signal":
+                target_id = str(message.get("targetPlayerId", ""))
+                signal = message.get("signal")
+                if room.find_player(target_id) is None or target_id == player_id_value:
+                    await websocket.send_json({"type": "error", "message": "Получатель голосового сигнала не найден"})
+                    continue
+                if not isinstance(signal, dict) or len(str(signal)) > 25_000:
+                    await websocket.send_json({"type": "error", "message": "Некорректный голосовой сигнал"})
+                    continue
+                await send_to_player(
+                    code,
+                    target_id,
+                    {"type": "voice-signal", "fromPlayerId": player_id_value, "signal": signal},
+                )
+                continue
             try:
                 async with locks[code]:
                     should_save = True
@@ -140,7 +177,31 @@ async def game_socket(websocket: WebSocket, code: str, player_id_value: str) -> 
         player_sockets.discard(websocket)
         if not player_sockets:
             player.connected = False
+            if player_id_value in voice_members.setdefault(code, set()):
+                voice_members[code].discard(player_id_value)
+                await send_voice_event(
+                    code,
+                    {"type": "voice-peer-left", "playerId": player_id_value},
+                    exclude_player=player_id_value,
+                )
         await broadcast(code)
+
+
+async def send_to_player(code: str, player_id_value: str, payload: dict[str, Any]) -> None:
+    dead: list[WebSocket] = []
+    for socket in list(connections.get(code, {}).get(player_id_value, set())):
+        try:
+            await socket.send_json(payload)
+        except Exception:
+            dead.append(socket)
+    for socket in dead:
+        connections.get(code, {}).get(player_id_value, set()).discard(socket)
+
+
+async def send_voice_event(code: str, payload: dict[str, Any], exclude_player: str | None = None) -> None:
+    for owner_id in list(voice_members.get(code, set())):
+        if owner_id != exclude_player:
+            await send_to_player(code, owner_id, payload)
 
 
 async def broadcast(code: str) -> None:

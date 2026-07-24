@@ -284,3 +284,42 @@ button:focus-visible,input:focus-visible { outline:2px solid var(--acid); outlin
   .chat-form{padding-bottom:max(11px,env(safe-area-inset-bottom))}
   .chat-form input{font-size:16px}
 }
+
+.voice-dock{position:fixed;right:90px;bottom:22px;z-index:35}
+.voice-toggle{position:relative;width:56px;height:56px;border:1px solid #45444b;background:#202025;color:#c4c2ca;display:grid;place-items:center;cursor:pointer;box-shadow:6px 6px 0 #0008;transition:.2s transform,.2s border-color,.2s color}
+.voice-toggle:hover:not(:disabled),.voice-dock--active .voice-toggle{border-color:var(--acid);color:var(--acid);transform:translateY(-2px)}
+.voice-toggle:disabled{opacity:.45;cursor:not-allowed}
+.voice-toggle svg{width:23px}
+.voice-toggle i{position:absolute;right:-7px;top:-7px;min-width:21px;height:21px;padding:0 5px;border:2px solid #0b0b0e;border-radius:11px;background:var(--acid);color:#111;font:800 10px/17px 'Manrope';font-style:normal}
+.voice-panel{position:absolute;right:0;bottom:70px;width:min(310px,calc(100vw - 32px));border:1px solid #3e3d44;background:#111115f7;box-shadow:14px 18px 50px #000d,6px 6px 0 #dfff3f1c;backdrop-filter:blur(20px);overflow:hidden}
+.voice-panel>header{min-height:62px;padding:12px 13px 11px 16px;border-bottom:1px solid #303036;display:flex;align-items:center;justify-content:space-between}
+.voice-panel>header b,.voice-panel>header span{display:block}
+.voice-panel>header b{font:600 9px 'Unbounded';letter-spacing:.1em}
+.voice-panel>header span{margin-top:4px;color:#77767e;font-size:8px;letter-spacing:.08em}
+.voice-panel>header button{width:34px;height:34px;border:1px solid #333239;background:#1a1a1f;color:#8b8a91;display:grid;place-items:center;cursor:pointer}
+.voice-panel>header button svg{width:16px}
+.voice-join{padding:25px 22px 24px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.voice-join>svg{width:38px;height:38px;color:var(--acid);margin-bottom:13px}
+.voice-join>b{font:600 12px 'Unbounded';text-transform:uppercase}
+.voice-join p{margin:9px 0 18px;color:#7f7e85;font-size:10px;line-height:1.45}
+.voice-join button{width:100%;min-height:48px;border:0;background:var(--acid);color:#111;display:flex;align-items:center;justify-content:center;gap:9px;font-size:10px;font-weight:800;text-transform:uppercase;cursor:pointer}
+.voice-join button svg{width:17px}
+.voice-members{max-height:235px;overflow-y:auto;padding:10px}
+.voice-members>div{min-height:48px;padding:6px 8px;display:grid;grid-template-columns:32px 1fr 18px;gap:9px;align-items:center;border-bottom:1px solid #29282e}
+.voice-members i{width:32px;height:32px;background:#2d3020;color:var(--acid);display:grid;place-items:center;font:700 11px 'Unbounded';font-style:normal}
+.voice-members span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:700}
+.voice-members svg{width:14px;color:var(--acid)}
+.voice-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px;border-top:1px solid #303036}
+.voice-controls button{min-height:53px;border:1px solid #3a3940;background:#202025;color:#d1cfd6;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.voice-controls button svg{width:18px}
+.voice-controls button span{font-size:9px;font-weight:800;text-transform:uppercase}
+.voice-controls button.muted{border-color:#7a342d;color:var(--coral)}
+.voice-controls button.leave{background:#3a1d1b;border-color:#68302b;color:#ff8170}
+.voice-error{margin:0;padding:9px 12px;border-top:1px solid #492d2a;background:#271817;color:#ff806e;text-align:center;font-size:9px;line-height:1.35}
+
+@media(max-width:600px){
+  .voice-dock{right:74px;bottom:calc(12px + env(safe-area-inset-bottom))}
+  .voice-toggle{width:52px;height:52px}
+  .voice-panel{position:fixed;left:8px;right:8px;bottom:calc(74px + env(safe-area-inset-bottom));width:auto;max-height:calc(100dvh - 92px - env(safe-area-inset-top));overflow-y:auto}
+  .voice-members{max-height:38dvh}
+}
