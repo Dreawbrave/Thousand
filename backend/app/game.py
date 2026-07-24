@@ -12,6 +12,9 @@ from typing import Any
 PITS = ((200, 300), (600, 700))
 REACTION_IDS = frozenset({"laugh", "cry", "angry", "confused", "shocked", "smug", "love", "cool"})
 REACTION_COOLDOWN_SECONDS = 1.2
+CHAT_MESSAGE_MAX_LENGTH = 300
+CHAT_HISTORY_LIMIT = 50
+CHAT_COOLDOWN_SECONDS = 0.7
 
 
 @dataclass
@@ -116,6 +119,8 @@ class Room:
     max_players: int = 0
     reaction: dict[str, Any] | None = None
     reaction_cooldowns: dict[str, float] = field(default_factory=dict, repr=False, compare=False)
+    chat_messages: list[dict[str, Any]] = field(default_factory=list)
+    chat_cooldowns: dict[str, float] = field(default_factory=dict, repr=False, compare=False)
 
     @property
     def current_player(self) -> Player | None:
@@ -145,6 +150,30 @@ class Room:
             "nonce": secrets.token_hex(6),
             "createdAt": int(time.time() * 1000),
         }
+
+    def send_chat_message(self, actor_id: str, text: str) -> None:
+        player = self.find_player(actor_id)
+        if player is None:
+            raise ValueError("Игрок не найден")
+        clean = " ".join(str(text).strip().split())
+        if not clean:
+            raise ValueError("Сообщение не может быть пустым")
+        if len(clean) > CHAT_MESSAGE_MAX_LENGTH:
+            raise ValueError(f"Сообщение длиннее {CHAT_MESSAGE_MAX_LENGTH} символов")
+        now = time.monotonic()
+        last_sent = self.chat_cooldowns.get(actor_id, 0.0)
+        if now - last_sent < CHAT_COOLDOWN_SECONDS:
+            raise ValueError("Не так быстро — подожди секунду")
+        self.chat_cooldowns[actor_id] = now
+        self.chat_messages.append(
+            {
+                "id": secrets.token_hex(8),
+                "playerId": actor_id,
+                "text": clean,
+                "createdAt": int(time.time() * 1000),
+            }
+        )
+        self.chat_messages = self.chat_messages[-CHAT_HISTORY_LIMIT:]
 
     def start(self, actor_id: str) -> None:
         if actor_id != self.host_id:
@@ -286,6 +315,7 @@ class Room:
             "bankRequirement": self.bank_requirement(current) if current else 0,
             "maxPlayers": self.max_players,
             "reaction": self.reaction,
+            "chatMessages": self.chat_messages,
         }
 
     def stored(self) -> dict[str, Any]:

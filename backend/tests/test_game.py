@@ -168,3 +168,42 @@ def test_reactions_are_validated_and_rate_limited() -> None:
     room.send_reaction("one", "cry")
     with pytest.raises(ValueError, match="Не так быстро"):
         room.send_reaction("one", "love")
+
+
+def test_chat_message_is_available_in_lobby_and_not_persisted() -> None:
+    room = playing_room()
+    room.status = "lobby"
+
+    room.send_chat_message("one", "  Всем   привет!  ")
+
+    assert room.chat_messages[0]["playerId"] == "one"
+    assert room.chat_messages[0]["text"] == "Всем привет!"
+    assert room.public()["chatMessages"] == room.chat_messages
+    assert "chatMessages" not in room.stored()
+
+
+def test_chat_message_is_validated_and_rate_limited() -> None:
+    room = playing_room()
+
+    with pytest.raises(ValueError, match="пустым"):
+        room.send_chat_message("one", "   ")
+    with pytest.raises(ValueError, match="300"):
+        room.send_chat_message("one", "x" * 301)
+
+    room.send_chat_message("one", "Первое")
+    with pytest.raises(ValueError, match="Не так быстро"):
+        room.send_chat_message("one", "Второе")
+
+
+def test_chat_history_keeps_latest_fifty_messages() -> None:
+    room = playing_room()
+    room.chat_messages = [
+        {"id": str(index), "playerId": "one", "text": str(index), "createdAt": index}
+        for index in range(50)
+    ]
+
+    room.send_chat_message("two", "Новое")
+
+    assert len(room.chat_messages) == 50
+    assert room.chat_messages[0]["id"] == "1"
+    assert room.chat_messages[-1]["text"] == "Новое"

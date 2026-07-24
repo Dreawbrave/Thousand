@@ -23,6 +23,13 @@ export type Reaction = {
   createdAt: number
 }
 
+export type ChatMessage = {
+  id: string
+  playerId: string
+  text: string
+  createdAt: number
+}
+
 export type GameState = {
   code: string
   status: 'lobby' | 'playing' | 'finished'
@@ -40,6 +47,7 @@ export type GameState = {
   bankRequirement: number
   maxPlayers: number
   reaction: Reaction | null
+  chatMessages: ChatMessage[]
 }
 
 export type Session = { playerId: string; code: string; name: string }

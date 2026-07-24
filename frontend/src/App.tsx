@@ -5,6 +5,7 @@ import { Die } from './components/Dice'
 import { Logo } from './components/Logo'
 import { RulesModal } from './components/RulesModal'
 import { Reactions } from './components/Reactions'
+import { Chat } from './components/Chat'
 import type { GameState, Session } from './types'
 
 const SESSION_KEY = 'thousand-session'
@@ -105,6 +106,7 @@ function App() {
       ) : (
         <Game state={state} me={session.playerId} connected={connected} send={send} leave={leave} rolling={rolling} openRules={() => setRules(true)} error={error} />
       )}
+      {session && state && <Chat messages={state.chatMessages} players={state.players} me={session.playerId} send={send} disabled={!connected} />}
     </main>
   )
 }

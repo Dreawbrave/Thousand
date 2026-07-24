@@ -123,6 +123,9 @@ async def game_socket(websocket: WebSocket, code: str, player_id_value: str) -> 
                     elif action == "reaction":
                         room.send_reaction(player_id_value, message.get("stickerId", ""))
                         should_save = False
+                    elif action == "chat":
+                        room.send_chat_message(player_id_value, message.get("text", ""))
+                        should_save = False
                     else:
                         raise ValueError("Неизвестное действие")
                     if should_save:
